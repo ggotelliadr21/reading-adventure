@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Reading Adventure - Grade 2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', -apple-system, sans-serif;
+    background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+    min-height: 100vh;
+    color: #333;
+    padding: 12px;
+  }
+  .container { max-width: 820px; margin: 0 auto; }
+  h1 { color: #FF6B6B; text-align: center; font-size: 36px; margin-bottom: 4px; text-shadow: 2px 2px 0 #FFF; }
+  .subtitle { color: #4ECDC4; text-align: center; margin-bottom: 16px; font-size: 20px; font-weight: bold; }
+  .card {
+    background: white; border-radius: 24px; padding: 22px; margin-bottom: 16px;
+    box-shadow: 0 8px 0 #FFD93D, 0 12px 25px rgba(0,0,0,0.15); border: 4px solid #FFD93D;
+  }
+  .start-btn {
+    display: block; width: 100%; background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white; border: none; padding: 20px; font-size: 24px; border-radius: 20px;
+    margin: 12px 0; cursor: pointer; font-weight: bold; box-shadow: 0 6px 0 #E55A5A;
+  }
+  .passage {
+    background: #FFF9E6; border-left: 6px solid #FF6B6B; padding: 16px; margin: 16px 0;
+    font-size: 22px; line-height: 1.6; border-radius: 12px; border: 3px solid #FFE5B4;
+  }
+  .question { font-size: 24px; font-weight: bold; margin: 18px 0 12px; }
+  .option {
+    display: flex; align-items: center; background: #F0F8FF; border: 3px solid #87CEEB;
+    border-radius: 16px; padding: 16px 18px; margin: 12px 0; font-size: 20px; cursor: pointer;
+  }
+  .option.correct { background: #C8E6C9; border-color: #4CAF50; }
+  .option.wrong { background: #FFCDD2; border-color: #F44336; }
+  .letter {
+    background: #4ECDC4; color: white; width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 14px; font-size: 22px;
+  }
+  .option.correct .letter { background: #4CAF50; }
+  .option.wrong .letter { background: #F44336; }
+  .btn { background: #4ECDC4; color: white; border: none; padding: 14px 24px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; margin: 8px; }
+  .btn-secondary { background: #FF6B6B; }
+  .controls { text-align: center; margin-top: 18px; }
+  .score-box { text-align: center; font-size: 22px; margin: 16px 0; line-height: 1.6; }
+  .hidden { display: none; }
+  .progress { font-size: 18px; color: #FF6B6B; text-align: center; margin-bottom: 6px; font-weight: bold; }
+  .stars { text-align: center; font-size: 28px; margin: 8px 0; }
+  .feedback { text-align: center; font-size: 22px; font-weight: bold; margin: 10px 0; min-height: 30px; }
+  .mascot { text-align: center; font-size: 48px; margin-bottom: 8px; }
+  .progress-bar { background: #eee; border-radius: 10px; height: 18px; margin: 6px 0 14px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #4ECDC4, #4CAF50); border-radius: 10px; transition: width 0.4s; }
+  .progress-row { margin: 12px 0; font-size: 18px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="mascot">🌟📖🚀</div>
+  <h1>Reading Adventure!</h1>
+  <p class="subtitle">Grade 2 Power Practice</p>
+
+  <div id="home" class="card">
+    <div class="mascot">🦁</div>
+    <p style="text-align:center; margin-bottom:16px; font-size:20px; font-weight:bold;">Ready for a reading adventure?</p>
+    <button class="start-btn" onclick="startAdaptive()">Start Adventure! 🚀</button>
+    <button class="btn" onclick="showProgress()" style="display:block; width:100%; margin-top:8px;">📊 See Progress</button>
+    <button class="btn" onclick="showHistory()" style="display:block; width:100%; margin-top:8px; background:#FFD93D; color:#333;">📜 Test History</button>
+    <p style="text-align:center; font-size:15px; color:#666; margin-top:8px;" id="historyNote">Progress is saved on this iPad.</p>
+  </div>
+
+  <div id="practice" class="card hidden">
+    <div class="stars" id="starDisplay">⭐⭐⭐⭐⭐</div>
+    <div class="progress" id="progressText"></div>
+    <div id="questionArea"></div>
+    <div class="feedback" id="feedbackText"></div>
+    <div class="controls">
+      <button class="btn btn-secondary" onclick="showHome()">Home</button>
+    </div>
+  </div>
+
+  <div id="results" class="card hidden">
+    <div class="mascot" id="resultMascot">🎉</div>
+    <div class="score-box" id="resultsText"></div>
+    <div class="controls">
+      <button class="btn" onclick="startAdaptive()">Play Again! 🚀</button>
+      <button class="btn btn-secondary" onclick="showHome()">Home</button>
+    </div>
+  </div>
+
+  <div id="progressScreen" class="card hidden">
+    <div class="mascot">📊</div>
+    <h2 style="text-align:center; color:#FF6B6B; margin-bottom:16px;">Your Progress</h2>
+    <div id="progressContent"></div>
+    <div class="controls">
+      <button class="btn" onclick="showHome()">Back Home</button>
+    </div>
+  </div>
+
+  <div id="historyScreen" class="card hidden">
+    <div class="mascot">📜</div>
+    <h2 style="text-align:center; color:#FF6B6B; margin-bottom:16px;">Test History</h2>
+    <div id="historyContent"></div>
+    <div class="controls">
+      <button class="btn" onclick="showHome()">Back Home</button>
+    </div>
+  </div>
+
+<script>
+const allQuestions = [
+  {
+    id: "v1",
+    type: "vocab",
+    sentence: "The puppy was so ___ that he fell asleep.",
+    options: [
+      "sleepy",
+      "loud",
+      "green",
+      "wet"
+    ],
+    answer: 0
+  },
+  {
+    id: "v2",
+    type: "vocab",
+    sentence: "She used a ___ to cut the paper.",
+    options: [
+      "scissors",
+      "spoon",
+      "ball",
+      "hat"
+    ],
+    answer: 0
+  },
+  {
+    id: "v3",
+    type: "vocab",
+    sentence: "The sun is very ___ in the sky.",
+    options: [
+      "dark",
+      "cold",
+      "wet",
+      "bright"
+    ],
+    answer: 3
+  },
+  {
+    id: "v4",
+    type: "vocab",
+    sentence: "Please ___ your hands before you eat.",
+    options: [
+      "color",
+      "hide",
+      "wash",
+      "break"
+    ],
+    answer: 2
+  },
+  {
+    id: "v5",
+    type: "vocab",
+    sentence: "The birds ___ south for the winter.",
+    options: [
+      "fly",
+      "swim",
+      "run",
+      "jump"
+    ],
+    answer: 0
+  },
+  {
+    id: "v6",
+    type: "vocab",
+    sentence: "Please ___ the door when you leave.",
+    options: [
+      "close",
+      "open",
+      "paint",
+      "break"
+    ],
+    answer: 0
+  },
+  {
+    id: "v7",
+    type: "vocab",
+    sentence: "She was ___ when her team won the game.",
+    options: [
+      "excited",
+      "bored",
+      "sleepy",
+      "hungry"
+    ],
+    answer: 0
+  },
+  {
+    id: "v8",
+    type: "vocab",
+    sentence: "The scientist made an important ___ about the plant.",
+    options: [
+      "discovery",
+      "mistake",
+      "noise",
+      "game"
+    ],
+    answer: 0
+  },
+  {
+    id: "v9",
+    type: "vocab",
+    sentence: "The little bird can ___ high in the sky.",
+    options: [
+      "swim",
+      "fly",
+      "dig",
+      "sleep"
+    ],
+    answer: 1
+  },
+  {
+    id: "v10",
+    type: "vocab",
+    sentence: "We need a ___ to drink the water.",
+    options: [
+      "cup",
+      "book",
+      "shoe",
+      "hat"
+    ],
+    answer: 0
+  },
+  {
+    id: "p1",
+    type: "phonics",
+    question: "Which word has the same ending sound as dog?",
+    options: [
+      "cat",
+      "log",
+      "hat",
+      "sun"
+    ],
+    answer: 1
+  },
+  {
+    id: "p2",
+    type: "phonics",
+    question: "Which word is made of two syllables?",
+    options: [
+      "cat",
+      "happy",
+      "dog",
+      "run"
+    ],
+    answer: 1
+  },
+  {
+    id: "p3",
+    type: "phonics",
+    question: "Which word rhymes with cat?",
+    options: [
+      "hat",
+      "dog",
+      "sun",
+      "big"
+    ],
+    answer: 0
+  },
+  {
+    id: "p4",
+    type: "phonics",
+    question: "Which word has the short a sound?",
+    options: [
+      "cake",
+      "rain",
+      "play",
+      "cat"
+    ],
+    answer: 3
+  },
+  {
+    id: "p5",
+    type: "phonics",
+    question: "Which word has the same vowel sound as rain?",
+    options: [
+      "ran",
+      "play",
+      "rug",
+      "pin"
+    ],
+    answer: 1
+  },
+  {
+    id: "p6",
+    type: "phonics",
+    question: "What does re- mean in the word redo?",
+    options: [
+      "not",
+      "before",
+      "again",
+      "under"
+    ],
+    answer: 2
+  },
+  {
+    id: "p7",
+    type: "phonics",
+    question: "What does the prefix un- mean in unhappy?",
+    options: [
+      "again",
+      "before",
+      "under",
+      "not"
+    ],
+    answer: 3
+  },
+  {
+    id: "p8",
+    type: "phonics",
+    question: "Which word has a long a sound?",
+    options: [
+      "cat",
+      "cake",
+      "cut",
+      "cup"
+    ],
+    answer: 1
+  },
+  {
+    id: "p9",
+    type: "phonics",
+    question: "What is the base word in jumping?",
+    options: [
+      "jump",
+      "ing",
+      "jumper",
+      "jumped"
+    ],
+    answer: 0
+  },
+  {
+    id: "p10",
+    type: "phonics",
+    question: "Which word is a compound word?",
+    options: [
+      "happy",
+      "sunflower",
+      "jump",
+      "run"
+    ],
+    answer: 1
+  },
+  {
+    id: "r1",
+    type: "passage",
+    passage: "Jen planted a seed in a small pot. She gave it water every day. A green sprout came up.",
+    question: "What happened after Jen watered the seed?",
+    options: [
+      "She found a cup.",
+      "A green sprout came up.",
+      "She ate the seed.",
+      "The pot broke."
+    ],
+    answer: 1
+  },
+  {
+    id: "r2",
+    type: "passage",
+    passage: "Tom got a new bike for his birthday. He rode it to the park with his friend.",
+    question: "Where did Tom ride his bike?",
+    options: [
+      "To school",
+      "To the park",
+      "To the store",
+      "Home"
+    ],
+    answer: 1
+  },
+  {
+    id: "r3",
+    type: "passage",
+    passage: "Max the rabbit ran fast at the start of the race. He got tired and stopped to rest. Sam the turtle kept going slowly. In the end Sam won.",
+    question: "Why did Sam win the race?",
+    options: [
+      "He was faster.",
+      "He never stopped.",
+      "Max let him win.",
+      "He ran the wrong way."
+    ],
+    answer: 1
+  },
+  {
+    id: "r4",
+    type: "passage",
+    passage: "Bees visit flowers to collect nectar. They carry the nectar back to the hive. There they turn it into honey.",
+    question: "What do bees turn nectar into?",
+    options: [
+      "Wax",
+      "Honey",
+      "Pollen",
+      "Leaves"
+    ],
+    answer: 1
+  },
+  {
+    id: "r5",
+    type: "passage",
+    passage: "Mia held a red balloon at the fair. A strong wind blew hard. The balloon flew away into the sky.",
+    question: "What color was the balloon?",
+    options: [
+      "Blue",
+      "Red",
+      "Yellow",
+      "Green"
+    ],
+    answer: 1
+  },
+  {
+    id: "r6",
+    type: "passage",
+    passage: "The little boat rocked on the big waves. The sailor pulled the rope tight. The sail caught the wind. Soon the boat moved faster across the water.",
+    question: "Why did the boat move faster?",
+    options: [
+      "The sailor jumped out.",
+      "The sail caught the wind.",
+      "The waves stopped.",
+      "The rope broke."
+    ],
+    answer: 1
+  },
+  {
+    id: "r7",
+    type: "passage",
+    passage: "Dogs need food and water every day. They also need walks and love from their owners.",
+    question: "What do dogs need every day?",
+    options: [
+      "Toys only",
+      "Food and water",
+      "A car",
+      "Books"
+    ],
+    answer: 1
+  },
+  {
+    id: "r8",
+    type: "passage",
+    passage: "Fish live in water. They use fins to swim. They use gills to breathe.",
+    question: "What do fish use to breathe?",
+    options: [
+      "Fins",
+      "Gills",
+      "Tails",
+      "Eyes"
+    ],
+    answer: 1
+  },
+  {
+    id: "a1",
+    type: "audio",
+    audioText: "The cat sat on the mat.",
+    question: "Where did the cat sit?",
+    options: [
+      "In the tree",
+      "Under the bed",
+      "On the chair",
+      "On the mat"
+    ],
+    answer: 3
+  },
+  {
+    id: "a2",
+    type: "audio",
+    audioText: "Sam has a red ball.",
+    question: "What color is the ball?",
+    options: [
+      "Blue",
+      "Green",
+      "Red",
+      "Yellow"
+    ],
+    answer: 2
+  },
+  {
+    id: "a3",
+    type: "audio",
+    audioText: "The bird flew high in the sky.",
+    question: "Where did the bird fly?",
+    options: [
+      "High in the sky",
+      "In the water",
+      "Under the ground",
+      "In a tree"
+    ],
+    answer: 0
+  },
+  {
+    id: "a4",
+    type: "audio",
+    audioText: "The little dog ran after the ball and barked happily.",
+    question: "What did the dog do?",
+    options: [
+      "He slept",
+      "He barked happily",
+      "He swam",
+      "He ate"
+    ],
+    answer: 1
+  },
+  {
+    id: "a5",
+    type: "audio",
+    audioText: "Mia put on her blue coat and went outside.",
+    question: "What color was Mia’s coat?",
+    options: [
+      "Red",
+      "Blue",
+      "Green",
+      "Yellow"
+    ],
+    answer: 1
+  },
+  {
+    id: "v11",
+    type: "vocab",
+    sentence: "The flower smells very ___.",
+    options: [
+      "loud",
+      "sweet",
+      "hard",
+      "fast"
+    ],
+    answer: 1
+  },
+  {
+    id: "v12",
+    type: "vocab",
+    sentence: "Please ___ the book on the table.",
+    options: [
+      "put",
+      "eat",
+      "run",
+      "sing"
+    ],
+    answer: 0
+  },
+  {
+    id: "v13",
+    type: "vocab",
+    sentence: "The baby is ___ in the crib.",
+    options: [
+      "sleeping",
+      "running",
+      "flying",
+      "swimming"
+    ],
+    answer: 0
+  },
+  {
+    id: "p11",
+    type: "phonics",
+    question: "Which word has the same ending sound as cat?",
+    options: [
+      "hat",
+      "dog",
+      "sun",
+      "big"
+    ],
+    answer: 0
+  },
+  {
+    id: "p12",
+    type: "phonics",
+    question: "What does the suffix -ful mean in helpful?",
+    options: [
+      "full of",
+      "not",
+      "again",
+      "under"
+    ],
+    answer: 0
+  },
+  {
+    id: "r9",
+    type: "passage",
+    passage: "Sara packed her lunch and walked to school. She saw her friend at the gate.",
+    question: "Where was Sara going?",
+    options: [
+      "To the park",
+      "To school",
+      "To the store",
+      "Home"
+    ],
+    answer: 1
+  },
+  {
+    id: "r10",
+    type: "passage",
+    passage: "The rain fell all night. In the morning the grass was wet and shiny.",
+    question: "What happened because of the rain?",
+    options: [
+      "The grass was wet.",
+      "The sun came out.",
+      "It snowed.",
+      "The wind stopped."
+    ],
+    answer: 0
+  },
+  {
+    id: "a7",
+    type: "audio",
+    audioText: "The small white cat drank milk from the bowl.",
+    question: "What did the cat drink?",
+    options: [
+      "Water",
+      "Milk",
+      "Juice",
+      "Soda"
+    ],
+    answer: 1
+  },
+  {
+    id: "a8",
+    type: "audio",
+    audioText: "Ben found a shiny coin under the chair.",
+    question: "Where did Ben find the coin?",
+    options: [
+      "On the table",
+      "Under the chair",
+      "In the garden",
+      "In his pocket"
+    ],
+    answer: 1
+  },
+  {
+    id: "v14",
+    type: "vocab",
+    sentence: "The opposite of big is ___.",
+    options: [
+      "small",
+      "tall",
+      "long",
+      "fast"
+    ],
+    answer: 0
+  },
+  {
+    id: "v15",
+    type: "vocab",
+    sentence: "A group of fish is called a ___.",
+    options: [
+      "flock",
+      "herd",
+      "school",
+      "pack"
+    ],
+    answer: 2
+  },
+  {
+    id: "v16",
+    type: "vocab",
+    sentence: "Please ___ the light so we can see.",
+    options: [
+      "turn on",
+      "turn off",
+      "break",
+      "hide"
+    ],
+    answer: 0
+  },
+  {
+    id: "v17",
+    type: "vocab",
+    sentence: "The ice cream is cold and ___.",
+    options: [
+      "hot",
+      "sweet",
+      "hard",
+      "loud"
+    ],
+    answer: 1
+  },
+  {
+    id: "v18",
+    type: "vocab",
+    sentence: "She ___ a picture of her dog.",
+    options: [
+      "drew",
+      "ate",
+      "ran",
+      "slept"
+    ],
+    answer: 0
+  },
+  {
+    id: "p13",
+    type: "phonics",
+    question: "Which word has the same middle sound as bed?",
+    options: [
+      "red",
+      "bad",
+      "bud",
+      "bid"
+    ],
+    answer: 0
+  },
+  {
+    id: "p14",
+    type: "phonics",
+    question: "What is the silent letter in knife?",
+    options: [
+      "k",
+      "n",
+      "i",
+      "f"
+    ],
+    answer: 0
+  },
+  {
+    id: "p15",
+    type: "phonics",
+    question: "Which word is a synonym for happy?",
+    options: [
+      "sad",
+      "glad",
+      "mad",
+      "tired"
+    ],
+    answer: 1
+  },
+  {
+    id: "p16",
+    type: "phonics",
+    question: "How many syllables are in the word elephant?",
+    options: [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    answer: 1
+  },
+  {
+    id: "p17",
+    type: "phonics",
+    question: "Which word has the long e sound?",
+    options: [
+      "bed",
+      "see",
+      "set",
+      "sun"
+    ],
+    answer: 1
+  },
+  {
+    id: "r11",
+    type: "passage",
+    passage: "Leo baked cookies with his mom. They put them in the oven for 10 minutes. The cookies smelled sweet.",
+    question: "How long were the cookies in the oven?",
+    options: [
+      "5 minutes",
+      "10 minutes",
+      "20 minutes",
+      "1 hour"
+    ],
+    answer: 1
+  },
+  {
+    id: "r12",
+    type: "passage",
+    passage: "The kite flew high until the string broke. Then it fell into the tree.",
+    question: "What happened to the kite?",
+    options: [
+      "It flew away forever.",
+      "It fell into the tree.",
+      "It landed in the lake.",
+      "It stayed in the sky."
+    ],
+    answer: 1
+  },
+  {
+    id: "r13",
+    type: "passage",
+    passage: "Anna planted flowers in the garden. She watered them every day. Soon they grew tall and colorful.",
+    question: "What did Anna do every day?",
+    options: [
+      "She cut the flowers.",
+      "She watered them.",
+      "She moved them.",
+      "She painted them."
+    ],
+    answer: 1
+  },
+  {
+    id: "r14",
+    type: "passage",
+    passage: "The squirrel found nuts and buried them under the leaves. In winter it came back to eat them.",
+    question: "Why did the squirrel bury the nuts?",
+    options: [
+      "To hide them for later.",
+      "To grow a tree.",
+      "To play a game.",
+      "To feed the birds."
+    ],
+    answer: 0
+  },
+  {
+    id: "a9",
+    type: "audio",
+    audioText: "The children played soccer in the park after school.",
+    question: "Where did the children play?",
+    options: [
+      "At school",
+      "In the park",
+      "At home",
+      "At the beach"
+    ],
+    answer: 1
+  },
+  {
+    id: "a10",
+    type: "audio",
+    audioText: "Mom put the fresh bread on the table.",
+    question: "What did Mom put on the table?",
+    options: [
+      "Fresh bread",
+      "A book",
+      "A toy",
+      "Milk"
+    ],
+    answer: 0
+  },
+  {
+    id: "a11",
+    type: "audio",
+    audioText: "The little bird built a nest in the tall tree.",
+    question: "Where did the bird build its nest?",
+    options: [
+      "In the tall tree",
+      "On the ground",
+      "In a bush",
+      "On the roof"
+    ],
+    answer: 0
+  },
+  {
+    id: "a12",
+    type: "audio",
+    audioText: "Jake ate an apple and a sandwich for lunch.",
+    question: "What did Jake eat for lunch?",
+    options: [
+      "Pizza",
+      "An apple and a sandwich",
+      "Soup",
+      "Cookies"
+    ],
+    answer: 1
+  },
+  {
+    id: "v19",
+    type: "vocab",
+    sentence: "The opposite of hot is ___.",
+    options: [
+      "cold",
+      "warm",
+      "soft",
+      "loud"
+    ],
+    answer: 0
+  },
+  {
+    id: "v20",
+    type: "vocab",
+    sentence: "A person who teaches is a ___.",
+    options: [
+      "doctor",
+      "teacher",
+      "farmer",
+      "pilot"
+    ],
+    answer: 1
+  },
+  {
+    id: "v21",
+    type: "vocab",
+    sentence: "Please ___ your shoes before you come in.",
+    options: [
+      "take off",
+      "put on",
+      "break",
+      "hide"
+    ],
+    answer: 0
+  },
+  {
+    id: "v22",
+    type: "vocab",
+    sentence: "The puppy likes to ___ with the ball.",
+    options: [
+      "play",
+      "sleep",
+      "eat",
+      "swim"
+    ],
+    answer: 0
+  },
+  {
+    id: "v23",
+    type: "vocab",
+    sentence: "We need an ___ to see in the dark.",
+    options: [
+      "umbrella",
+      "apple",
+      "flashlight",
+      "book"
+    ],
+    answer: 2
+  },
+  {
+    id: "v24",
+    type: "vocab",
+    sentence: "The bird built its ___ in the tree.",
+    options: [
+      "nest",
+      "house",
+      "car",
+      "boat"
+    ],
+    answer: 0
+  },
+  {
+    id: "p18",
+    type: "phonics",
+    question: "Which word rhymes with cake?",
+    options: [
+      "lake",
+      "cat",
+      "cut",
+      "cup"
+    ],
+    answer: 0
+  },
+  {
+    id: "p19",
+    type: "phonics",
+    question: "What does the prefix dis- mean in disagree?",
+    options: [
+      "again",
+      "not",
+      "before",
+      "under"
+    ],
+    answer: 1
+  },
+  {
+    id: "p20",
+    type: "phonics",
+    question: "Which word has three syllables?",
+    options: [
+      "dog",
+      "happy",
+      "butterfly",
+      "run"
+    ],
+    answer: 2
+  },
+  {
+    id: "p21",
+    type: "phonics",
+    question: "Which word has the short i sound?",
+    options: [
+      "sit",
+      "kite",
+      "light",
+      "pie"
+    ],
+    answer: 0
+  },
+  {
+    id: "p22",
+    type: "phonics",
+    question: "What is the base word in running?",
+    options: [
+      "run",
+      "ning",
+      "runner",
+      "ran"
+    ],
+    answer: 0
+  },
+  {
+    id: "r15",
+    type: "passage",
+    passage: "The class went on a trip to the zoo. They saw lions, monkeys, and elephants. Everyone had a great time.",
+    question: "Where did the class go?",
+    options: [
+      "To the park",
+      "To the zoo",
+      "To the beach",
+      "To the library"
+    ],
+    answer: 1
+  },
+  {
+    id: "r16",
+    type: "passage",
+    passage: "Sam lost his pencil. He looked under his desk and found it.",
+    question: "Where did Sam find his pencil?",
+    options: [
+      "In his bag",
+      "Under his desk",
+      "On the floor",
+      "In the drawer"
+    ],
+    answer: 1
+  },
+  {
+    id: "r17",
+    type: "passage",
+    passage: "The leaves turned red and yellow in the fall. Then the wind blew them off the trees.",
+    question: "What color did the leaves turn?",
+    options: [
+      "Blue and green",
+      "Red and yellow",
+      "Black and white",
+      "Purple and pink"
+    ],
+    answer: 1
+  },
+  {
+    id: "r18",
+    type: "passage",
+    passage: "Mia helped her dad wash the car. They used soap and water. The car looked shiny when they finished.",
+    question: "What did Mia and her dad use to wash the car?",
+    options: [
+      "Sand and dirt",
+      "Soap and water",
+      "Paint and brush",
+      "Food and drinks"
+    ],
+    answer: 1
+  },
+  {
+    id: "r19",
+    type: "passage",
+    passage: "The little boy built a sandcastle at the beach. The waves came in. They washed the castle away.",
+    question: "What happened to the sandcastle?",
+    options: [
+      "It stayed forever.",
+      "The waves washed it away.",
+      "He took it home.",
+      "It turned into a rock."
+    ],
+    answer: 1
+  },
+  {
+    id: "r20",
+    type: "passage",
+    passage: "Emma read a book before bed. She turned off the light. Then she fell asleep.",
+    question: "What did Emma do before bed?",
+    options: [
+      "She watched TV.",
+      "She read a book.",
+      "She played outside.",
+      "She ate dinner."
+    ],
+    answer: 1
+  },
+  {
+    id: "r21",
+    type: "passage",
+    passage: "The puppy dug a hole in the yard. It buried its bone. Later it forgot where the bone was.",
+    question: "What did the puppy bury?",
+    options: [
+      "A ball",
+      "Its bone",
+      "A toy",
+      "A shoe"
+    ],
+    answer: 1
+  },
+  {
+    id: "r22",
+    type: "passage",
+    passage: "Dad made pancakes for breakfast. He put butter and syrup on them. The family ate them all.",
+    question: "What did Dad make for breakfast?",
+    options: [
+      "Eggs",
+      "Pancakes",
+      "Toast",
+      "Cereal"
+    ],
+    answer: 1
+  },
+  {
+    id: "a13",
+    type: "audio",
+    audioText: "The big brown dog wagged its tail when it saw its owner.",
+    question: "What did the dog do?",
+    options: [
+      "It barked",
+      "It wagged its tail",
+      "It ran away",
+      "It ate food"
+    ],
+    answer: 1
+  },
+  {
+    id: "a14",
+    type: "audio",
+    audioText: "Please close the window because it is cold outside.",
+    question: "Why should the window be closed?",
+    options: [
+      "It is raining",
+      "It is cold outside",
+      "It is dark",
+      "It is noisy"
+    ],
+    answer: 1
+  },
+  {
+    id: "a15",
+    type: "audio",
+    audioText: "The children sang a song and clapped their hands.",
+    question: "What did the children do?",
+    options: [
+      "They danced",
+      "They sang and clapped",
+      "They slept",
+      "They ate lunch"
+    ],
+    answer: 1
+  },
+  {
+    id: "a16",
+    type: "audio",
+    audioText: "Grandma baked a chocolate cake for the birthday party.",
+    question: "What kind of cake did Grandma bake?",
+    options: [
+      "Vanilla",
+      "Chocolate",
+      "Strawberry",
+      "Lemon"
+    ],
+    answer: 1
+  }
+];
+
+let history = JSON.parse(localStorage.getItem('readingHistory') || '{}');
+let sessionHistory = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+let currentIndex = 0;
+let inPractice = true;
+const totalQuestions = 34;
+const practiceQuestions = 3;
+let score = 0;
+let stars = 0;
+let sessionUsed = new Set();
+let currentQuestion = null;
+let missedQuestions = [];
+
+function getWeakness(type) {
+  const h = history[type] || { correct: 0, total: 0 };
+  if (h.total < 2) return 0.6;
+  return 1 - (h.correct / h.total);
+}
+
+function pickQuestion() {
+  // Bias toward vocab and passages to better match FAST balance
+  const types = ['vocab', 'vocab', 'passage', 'phonics', 'audio'];
+  const weights = types.map(t => ({ type: t, w: getWeakness(t) + 0.3 }));
+  const totalW = weights.reduce((s, x) => s + x.w, 0);
+  let r = Math.random() * totalW;
+  let chosen = 'vocab';
+  for (const w of weights) {
+    r -= w.w;
+    if (r <= 0) { chosen = w.type; break; }
+  }
+
+  let available = allQuestions.filter(q => q.type === chosen && !sessionUsed.has(q.id));
+  if (available.length === 0) {
+    available = allQuestions.filter(q => !sessionUsed.has(q.id));
+  }
+  if (available.length === 0) available = allQuestions;
+  const q = available[Math.floor(Math.random() * available.length)];
+  sessionUsed.add(q.id);
+  return q;
+}
+
+function startAdaptive() {
+  currentIndex = 0;
+  score = 0;
+  stars = 0;
+  inPractice = true;
+  missedQuestions = [];
+  sessionUsed = new Set();
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('progressScreen').classList.add('hidden');
+  document.getElementById('historyScreen').classList.add('hidden');
+  document.getElementById('practice').classList.remove('hidden');
+  updateStars();
+  showNextItem();
+}
+
+function updateStars() {
+  document.getElementById('starDisplay').textContent = '⭐'.repeat(Math.min(stars, 5)) + '☆'.repeat(Math.max(0, 5 - stars));
+}
+
+let englishVoice = null;
+function loadVoices() {
+  const voices = speechSynthesis.getVoices();
+  englishVoice = voices.find(v => v.lang.startsWith('en-US')) || voices.find(v => v.lang.startsWith('en'));
+}
+if ('speechSynthesis' in window) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = 0.9;
+  if (englishVoice) u.voice = englishVoice;
+  speechSynthesis.speak(u);
+}
+
+function showNextItem() {
+  const max = inPractice ? practiceQuestions : totalQuestions;
+  if (currentIndex >= max) {
+    if (inPractice) {
+      inPractice = false;
+      currentIndex = 0;
+      sessionUsed = new Set();
+      showNextItem();
+      return;
+    }
+    showResults();
+    return;
+  }
+  document.getElementById('feedbackText').textContent = '';
+  try {
+    currentQuestion = pickQuestion();
+  } catch (e) {
+    document.getElementById('questionArea').innerHTML = '<p style="color:red;">Error loading question. Please refresh.</p>';
+    return;
+  }
+  const label = inPractice ? `Practice ${currentIndex + 1} of ${practiceQuestions}` : `Question ${currentIndex + 1} of ${totalQuestions}`;
+  document.getElementById('progressText').textContent = label;
+
+  const area = document.getElementById('questionArea');
+  let html = '';
+  if (currentQuestion.type === 'audio') {
+    const safeText = (currentQuestion.audioText || '').replace(/'/g, "\\'").replace(/"/g, '"');
+    html += `<button class="listen-btn" onclick="speak('${safeText}')">🔊 Listen</button>`;
+    html += `<div class="question">${currentQuestion.question || ''}</div>`;
+  } else if (currentQuestion.passage) {
+    html += `<div class="passage">${currentQuestion.passage}</div>`;
+    html += `<div class="question">${currentQuestion.question || ''}</div>`;
+  } else if (currentQuestion.sentence) {
+    html += `<div class="question">${currentQuestion.sentence.replace('___', '<span style="border-bottom:3px solid #FF6B6B;padding:0 8px;font-weight:bold;color:#FF6B6B;">______</span>')}</div>`;
+  } else {
+    html += `<div class="question">${currentQuestion.question || ''}</div>`;
+  }
+  const letters = ['A', 'B', 'C', 'D'];
+  html += '<div class="options">';
+  (currentQuestion.options || []).forEach((opt, i) => {
+    html += `<div class="option" onclick="selectAnswer(${i})"><div class="letter">${letters[i]}</div><div>${opt}</div></div>`;
+  });
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+function selectAnswer(chosen) {
+  const correct = currentQuestion.answer;
+  const options = document.querySelectorAll('.option');
+  const feedback = document.getElementById('feedbackText');
+  options.forEach((opt, idx) => {
+    opt.style.pointerEvents = 'none';
+    if (idx === correct) opt.classList.add('correct');
+    if (idx === chosen && chosen !== correct) opt.classList.add('wrong');
+  });
+
+  const type = currentQuestion.type;
+  if (!inPractice) {
+    if (!history[type]) history[type] = { correct: 0, total: 0 };
+    history[type].total++;
+    if (chosen === correct) {
+      score++;
+      history[type].correct++;
+    } else {
+      missedQuestions.push({
+        question: currentQuestion.question || currentQuestion.sentence || currentQuestion.passage,
+        correctAnswer: currentQuestion.options[correct],
+        type: type
+      });
+    }
+    localStorage.setItem('readingHistory', JSON.stringify(history));
+  }
+  if (chosen === correct) {
+    stars = Math.min(stars + 1, 5);
+    feedback.textContent = "Awesome! 🎉";
+    feedback.style.color = "#4CAF50";
+  } else {
+    feedback.textContent = "Good try! Keep going 💪";
+    feedback.style.color = "#FF6B6B";
+  }
+  updateStars();
+  currentIndex++;
+  setTimeout(showNextItem, 1100);
+}
+
+function showResults() {
+  document.getElementById('practice').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  const percent = Math.round((score / totalQuestions) * 100);
+  sessionHistory.unshift({
+    date: new Date().toLocaleString(),
+    score: score,
+    total: totalQuestions,
+    percent: percent
+  });
+  if (sessionHistory.length > 50) sessionHistory = sessionHistory.slice(0, 50);
+  localStorage.setItem('sessionHistory', JSON.stringify(sessionHistory));
+
+  let summary = `You got <strong>${score}</strong> out of <strong>${totalQuestions}</strong>!<br>`;
+  summary += `<span style="font-size:28px;">${percent >= 80 ? '🏆 Super Reader!' : percent >= 60 ? '⭐ Great Job!' : '🌟 Keep Going!'}</span><br><br>`;
+  summary += "Progress saved.<br>";
+  if (missedQuestions.length > 0) {
+    summary += `<div style="margin-top:16px; text-align:left;"><strong>Review missed questions:</strong><br>`;
+    missedQuestions.forEach((m, i) => {
+      summary += `<div style="margin:8px 0; padding:8px; background:#FFF3CD; border-radius:8px; font-size:16px;">${i+1}. ${m.question || 'Question'}<br><em>Correct: ${m.correctAnswer}</em></div>`;
+    });
+    summary += `</div>`;
+  }
+  document.getElementById('resultsText').innerHTML = summary;
+  document.getElementById('resultMascot').textContent = percent >= 80 ? '🏆' : percent >= 60 ? '🎉' : '💪';
+}
+
+function showHistory() {
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('historyScreen').classList.remove('hidden');
+  if (sessionHistory.length === 0) {
+    document.getElementById('historyContent').innerHTML = '<p style="text-align:center; font-size:18px;">No tests completed yet.</p>';
+    return;
+  }
+  let html = '';
+  sessionHistory.forEach((s, i) => {
+    html += `<div style="padding:10px; border-bottom:1px solid #eee; font-size:18px;">
+      <strong>${s.date}</strong><br>
+      Score: ${s.score}/${s.total} (${s.percent}%)
+    </div>`;
+  });
+  document.getElementById('historyContent').innerHTML = html;
+}
+
+function showProgress() {
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('progressScreen').classList.remove('hidden');
+  const types = [
+    { key: 'vocab', label: 'Vocabulary' },
+    { key: 'phonics', label: 'Phonics' },
+    { key: 'passage', label: 'Passages' },
+    { key: 'audio', label: 'Listening' }
+  ];
+  let html = '';
+  let totalCorrect = 0, totalAsked = 0;
+  const weakAreas = [];
+  types.forEach(t => {
+    const h = history[t.key] || { correct: 0, total: 0 };
+    totalCorrect += h.correct;
+    totalAsked += h.total;
+    const pct = h.total ? Math.round((h.correct / h.total) * 100) : 0;
+    const missed = h.total - h.correct;
+    html += `<div class="progress-row"><strong>${t.label}</strong>: ${h.correct}/${h.total} correct (${pct}%)</div>`;
+    html += `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+    if (h.total >= 3 && pct < 70) weakAreas.push(t.label + ' (' + missed + ' missed)');
+  });
+  const overall = totalAsked ? Math.round((totalCorrect / totalAsked) * 100) : 0;
+  html = `<div style="text-align:center; font-size:22px; margin-bottom:18px;">Overall: <strong>${totalCorrect}/${totalAsked}</strong> (${overall}%)</div>` + html;
+  if (weakAreas.length > 0) {
+    html += `<div style="margin-top:20px; padding:12px; background:#FFF3CD; border-radius:12px; font-size:18px;"><strong>Needs more practice:</strong><br>${weakAreas.join('<br>')}</div>`;
+  } else if (totalAsked > 0) {
+    html += `<div style="margin-top:20px; padding:12px; background:#D4EDDA; border-radius:12px; font-size:18px; text-align:center;"><strong>Looking good!</strong><br>Keep practicing to stay strong.</div>`;
+  }
+  if (totalAsked === 0) html = '<p style="text-align:center; font-size:18px;">No practice yet. Start an adventure to see progress!</p>';
+  document.getElementById('progressContent').innerHTML = html;
+}
+
+function showHome() {
+  document.getElementById('practice').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('progressScreen').classList.add('hidden');
+  document.getElementById('historyScreen').classList.add('hidden');
+  document.getElementById('home').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
